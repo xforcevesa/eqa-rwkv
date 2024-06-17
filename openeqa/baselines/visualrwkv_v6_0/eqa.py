@@ -32,7 +32,7 @@ class EQARWKVConfig:
     head_size_divisor: int = 8
     dropout: float = 0.0
 
-    vision_tower_name: str = "openai/clip-vit-base-patch32"
+    vision_tower_name: str = "openai/clip-vit-large-patch14-336"
     grid_size: int = 8
     detail: str = "low"
     grad_cp: int = 0
@@ -53,13 +53,6 @@ class EQARWKVConfig:
 
     def __dict__(self):
         return dataclasses.asdict(self)
-    
-    def __init__(self, **kwargs):
-        super(EQARWKVConfig, self).__init__(**kwargs)
-        if self.dim_att <= 0:
-            self.dim_att = self.n_embd
-        if self.dim_ffn <= 0:
-            self.dim_ffn = int((self.n_embd * 3.5) // 32 * 32) 
 
 
 def preprocess_image(
@@ -105,6 +98,10 @@ def fetch_model(config: EQARWKVConfig) -> tuple:
     '''
     Loads the model and tokenizer.
     '''
+    if config.dim_att <= 0:
+        config.dim_att = config.n_embd
+    if config.dim_ffn <= 0:
+        config.dim_ffn = int((config.n_embd * 3.5) // 32 * 32) 
     model_path = Path(config.model_path)
     model_name = model_path.parent.name
     # Model
@@ -119,21 +116,22 @@ def fetch_model(config: EQARWKVConfig) -> tuple:
 
 def test_preprocessed_images():
     image_dir = "dummy_data/images/textvqa/train_images/"
-    image_processor = CLIPImageProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    image_processor = CLIPImageProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
     image_tensor = preprocess_image(image_dir, image_processor)
     print(image_tensor.shape) # (1, N, 3, 224, 224)
 
 
 def test_fetch_model():
     config = EQARWKVConfig(
-        model_path="../../../../visualrwkv-6/VisualRWKV-v060-1B6-v1.0-20240612.pth",
-        
+        model_path="../../../../visualrwkv-6/VisualRWKV-v060-1B6-v1.0-20240612.pth"
     )
     model, model_name, tokenizer, image_processor = fetch_model(config)
     print(type(model))
 
+def test_run_model():
+    pass
 
 if __name__ == '__main__':
-    # test_preprocessed_images()
+    test_preprocessed_images()
     test_fetch_model()
 

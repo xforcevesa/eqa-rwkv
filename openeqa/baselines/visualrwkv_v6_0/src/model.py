@@ -506,10 +506,12 @@ class VisualRWKV(pl.LightningModule):
         return truncated_input_embeds, truncated_labels
    
     def preparing_embedding(self, samples, truncate=True):
+        # sampels = {"input_ids": input_ids, "images": images, "labels": torch.full_like(input_ids, IGNORE_INDEX)}
         device, label_dtype = samples["labels"].device, samples["labels"].dtype
         emb_dtype = samples["images"].dtype
         ### prepare image features
-        image_features  = self.encode_images(samples["images"]) # with cls token
+        # (B, N, C, H, W)
+        image_features = self.encode_images(samples["images"]) # with cls token
         ### prepare input token
         new_input_embeds = []
         new_labels = []
